@@ -1,6 +1,8 @@
 ##############################################################################
 # API retracers
 
+add_subdirectory (daemon)
+
 include_directories (
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/lib/highlight
@@ -45,7 +47,6 @@ add_library (retrace_common STATIC
     process_name.hpp
     process_name.cpp
     retrace.cpp
-    retrace_main.cpp
     retrace_stdc.cpp
     retrace_swizzle.cpp
     state_writer.cpp
@@ -78,7 +79,6 @@ add_library (glretrace_common STATIC
     glretrace_wgl_font_bitmaps.cpp
     glretrace_wgl_font_outlines.cpp
     glretrace_egl.cpp
-    glretrace_main.cpp
     glretrace_ws.cpp
     glstate.cpp
     glstate_formats.cpp
@@ -114,7 +114,9 @@ endif ()
 
 if (WIN32 OR APPLE OR X11_FOUND)
     add_executable (glretrace
+        glretrace_main.cpp
         ${glws_os}
+        retrace_main.cpp
     )
 
     add_dependencies (glretrace glproc)
@@ -159,8 +161,10 @@ endif ()
 
 if (ENABLE_EGL AND X11_FOUND AND NOT WIN32 AND NOT APPLE AND NOT ENABLE_WAFFLE)
     add_executable (eglretrace
+        glretrace_main.cpp
         glws_xlib.cpp
         glws_egl_xlib.cpp
+        retrace_main.cpp
     )
 
     add_dependencies (eglretrace glproc)
