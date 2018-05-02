@@ -41,9 +41,11 @@ PerfMetrics *PerfMetrics::Create(OnFrameRetrace *callback) {
   GLint count;
   GlFunctions::GetIntegerv(GL_NUM_EXTENSIONS, &count);
 
+  /*
   const GLubyte *renderer = GlFunctions::GetString(GL_RENDERER);
   if (strstr((const char*)renderer, "AMD") != NULL)
       return new glretrace::PerfMetricsAMDGPA(callback);
+  */
 
   for (int i = 0; i < count; ++i) {
     const GLubyte *name = GlFunctions::GetStringi(GL_EXTENSIONS, i);

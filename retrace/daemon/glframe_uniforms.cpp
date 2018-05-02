@@ -97,13 +97,15 @@ class Uniform {
 }  // namespace glretrace
 
 Uniform::Uniform(int i) {
-  GLint prog, name_len, name_buf_len;
+  GLint prog = 0, name_len = 0, name_buf_len = 0;
   GLenum data_type;
   GL_CHECK();
   GlFunctions::GetIntegerv(GL_CURRENT_PROGRAM, &prog);
   GL_CHECK();
   GlFunctions::GetProgramiv(prog, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_buf_len);
+  if (name_buf_len)
   {
+    printf("%s:%i name_buf_len = %d\n", __func__, __LINE__, name_buf_len);
     std::vector<char> name_buf(name_buf_len * 2);
     GlFunctions::GetActiveUniform(prog,
                                   i,
@@ -118,6 +120,8 @@ Uniform::Uniform(int i) {
       // strip the [0] off of the name, we will iterate on it later
       name_buf[name_len - 3] = '\0';
     m_name = std::string(name_buf.data());
+  } else {
+    m_location = -1;
   }
 
   if (m_location == -1)

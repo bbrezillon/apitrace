@@ -178,8 +178,8 @@ include (CheckIncludeFileCXX)
 
 macro (add_compiler_flags)
     string (REPLACE ";" " " _FLAGS "${ARGV}")
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_FLAGS} -DGOOGLE_PROTOBUF_NO_RTTI")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_FLAGS} -g")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_FLAGS} -DGOOGLE_PROTOBUF_NO_RTTI -g")
 endmacro ()
 
 macro (add_linker_flags)
