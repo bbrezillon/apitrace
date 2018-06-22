@@ -338,6 +338,8 @@ RetraceRender::retrace(const StateTrack &tracker,
   // check that the parser is in correct state
   trace::ParseBookmark bm;
   m_parser->getBookmark(bm);
+  printf("%s:%i bm.offset = %llu:%u m_bookmark.start.offset = %llu:%u\n", __func__, __LINE__,
+  	 bm.offset.chunk, bm.offset.offsetInChunk, m_bookmark.start.offset.chunk, m_bookmark.start.offset.offsetInChunk);
   assert(bm.offset == m_bookmark.start.offset);
 
   // play up to but not past the end of the render

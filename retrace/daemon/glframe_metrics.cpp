@@ -38,21 +38,31 @@ using glretrace::PerfMetrics;
 using glretrace::OnFrameRetrace;
 
 PerfMetrics *PerfMetrics::Create(OnFrameRetrace *callback) {
-  GLint count;
+  std::string extensions;
+
+  /*
+  GLint count = 0;
   GlFunctions::GetIntegerv(GL_NUM_EXTENSIONS, &count);
 
+  printf("%s:%i count = %d ext = %s\n", __PRETTY_FUNCTION__, __LINE__, count, GlFunctions::GetString(GL_EXTENSIONS));
+  */
   /*
   const GLubyte *renderer = GlFunctions::GetString(GL_RENDERER);
   if (strstr((const char*)renderer, "AMD") != NULL)
       return new glretrace::PerfMetricsAMDGPA(callback);
   */
 
-  for (int i = 0; i < count; ++i) {
-    const GLubyte *name = GlFunctions::GetStringi(GL_EXTENSIONS, i);
-    if (strcmp((const char*)name, "GL_AMD_performance_monitor") == 0)
-      return new PerfMetricsAMD(callback);
-    if (strcmp((const char*)name, "GL_INTEL_performance_query") == 0)
-      return new PerfMetricsIntel(callback);
+  GlFunctions::GetGlExtensions(extensions);
+  printf("%s:%i ext = %s\n", __PRETTY_FUNCTION__, __LINE__, extensions.c_str());
+
+  if (extensions.find("GL_AMD_performance_monitor") != std::string::npos) {
+    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+    return new PerfMetricsAMD(callback);
+  } else if (extensions.find("GL_INTEL_performance_query") != std::string::npos) {
+    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+    return new PerfMetricsIntel(callback);
   }
+	
+  printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
   return new glretrace::DummyMetrics();
 }

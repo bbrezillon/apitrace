@@ -69,22 +69,28 @@ RetraceContext::RetraceContext(RenderId current_render,
   else
     delete call;
 
+  printf("%s:%i bm start %llu:%u\n", __func__, __LINE__,
+	 m_start_bookmark.offset.chunk,
+	 m_start_bookmark.offset.offsetInChunk);
   m_parser->setBookmark(m_start_bookmark);
 
   int current_render_buffer = RetraceRender::currentRenderBuffer();
   // play through the frame, generating renders
   while (true) {
     auto r = new RetraceRender(parser, retracer, tracker);
-    if (r->endsFrame()) {
-      delete r;
-      m_ends_frame = true;
-      break;
-    }
     m_renders[current_render] = r;
     ++current_render;
-
+    if (r->endsFrame()) {
+      m_ends_frame = true;
     // peek ahead to see if next call is in the following context
+      break;
+    }
+
     m_parser->getBookmark(m_end_bookmark);
+    // peek ahead to see if next call is in the following context
+  printf("%s:%i bm end %llu:%u\n", __func__, __LINE__,
+	 m_end_bookmark.offset.chunk,
+	 m_end_bookmark.offset.offsetInChunk);
     call = parser->parse_call();
     m_parser->setBookmark(m_end_bookmark);
     if (RetraceRender::changesContext(*call)) {

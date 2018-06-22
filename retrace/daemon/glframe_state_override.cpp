@@ -291,19 +291,27 @@ StateOverride::getState(const StateKey &item,
 void
 StateOverride::get_enabled_state(GLint k,
                                  std::vector<uint32_t> *data) {
+  GLuint ret;
   GL::GetError();
   assert(data->size() == 1);
   (*data)[0] = GlFunctions::IsEnabled(k);
-  assert(!GL::GetError());
+  ret = GL::GetError();
+  if (ret)
+	  printf("%s:%i ret = %d k = %d\n", __func__, __LINE__, ret, k);
+  assert(!ret);
 }
 
 
 void
 StateOverride::get_integer_state(GLint k,
                                  std::vector<uint32_t> *data) {
+  GLuint ret;
   GL::GetError();
   GlFunctions::GetIntegerv(k, reinterpret_cast<GLint*>(data->data()));
-  assert(!GL::GetError());
+  ret = GL::GetError();
+  if (ret)
+	  printf("%s:%i error %d k = %d\n", __func__, __LINE__, ret, k);
+  assert(!ret);
 }
 
 void
@@ -663,12 +671,15 @@ StateOverride::onState(SelectionId selId,
     callback->onState(selId, experimentCount, renderId,
                       k, {state_enum_to_name(data[0])});
   }
+  /*
   {
     StateKey k("Fragment/Blend", "GL_BLEND_DST");
     getState(k, &data);
     callback->onState(selId, experimentCount, renderId,
                       k, {state_enum_to_name(data[0])});
+	
   }
+  */
   {
     StateKey k("Fragment/Blend", "GL_BLEND_DST_ALPHA");
     getState(k, &data);
@@ -695,12 +706,14 @@ StateOverride::onState(SelectionId selId,
     floatString(data[0], &value);
     callback->onState(selId, experimentCount, renderId, k, {value});
   }
+  /*
   {
     StateKey k("Primitive/Line", "GL_LINE_SMOOTH");
     getState(k, &data);
     callback->onState(selId, experimentCount, renderId,
                       k, {data[0] ? "true" : "false"});
   }
+  */
   {
     StateKey k("Fragment/Blend", "GL_BLEND_EQUATION_RGB");
     getState(k, &data);

@@ -119,8 +119,9 @@ FrameRetrace::openFile(const std::string &filename,
     callback->onError(RETRACE_WARN, msg.str());
   }
 
+  printf("%s:%i file %s framenumber = %d\n", __PRETTY_FUNCTION__, __LINE__, filename.c_str(), framenumber);
   assemblyOutput.init();
-  retrace::debug = 0;
+  retrace::debug = 1;
   retracer.addCallbacks(glretrace::gl_callbacks);
   retracer.addCallbacks(glretrace::glx_callbacks);
   retracer.addCallbacks(glretrace::wgl_callbacks);
@@ -137,6 +138,8 @@ FrameRetrace::openFile(const std::string &filename,
     std::stringstream call_stream;
     trace::dump(*call, call_stream,
                 trace::DUMP_FLAG_NO_COLOR);
+
+//    printf("%s:%i CALL %s\n", __PRETTY_FUNCTION__, __LINE__, call_stream.str().c_str());
     GRLOGF(glretrace::DEBUG, "CALL: %s", call_stream.str().c_str());
 
     // we re-use shaders for shader editing features, even if the
@@ -150,6 +153,7 @@ FrameRetrace::openFile(const std::string &filename,
     delete call;
     if (frame_boundary) {
       ++current_frame;
+      printf("%s:%i current_frame %d\n", __PRETTY_FUNCTION__, __LINE__, current_frame);
       callback->onFileOpening(false, false, current_frame);
       if (current_frame == framenumber)
         break;
@@ -165,21 +169,22 @@ FrameRetrace::openFile(const std::string &filename,
   }
 
   // sends list of available metrics to ui
+  printf("%s:%i\n", __func__, __LINE__);
   m_metrics = PerfMetrics::Create(callback);
   parser->getBookmark(frame_start.start);
 
   // play through the frame, recording each context
   RenderId current_render(0);
-  while (true) {
+  current_frame = 0;
+  while (current_frame < framenumber) {
     auto c = new RetraceContext(current_render, parser, &retracer, &m_tracker);
     // initialize metrics collector with context
     m_metrics->beginContext();
     m_metrics->endContext();
     current_render = RenderId(current_render.index() + c->getRenderCount());
     m_contexts.push_back(c);
-    if (c->endsFrame()) {
-      break;
-    }
+    if (c->endsFrame())
+      current_frame++;
   }
 
   callback->onFileOpening(false, true, current_frame);
@@ -225,9 +230,11 @@ FrameState::FrameState(const std::string &filename,
   p->open(filename.c_str());
   trace::Call *call;
   int current_frame = 0;
+  printf("%s:%i file %s framenumber = %d\n", __PRETTY_FUNCTION__, __LINE__, filename.c_str(), framenumber);
   while ((call = p->scan_call()) && current_frame < framenumber) {
     if (RetraceRender::endsFrame(*call)) {
       ++current_frame;
+      printf("%s:%i current_frame = %d\n", __PRETTY_FUNCTION__, __LINE__, current_frame);
       if (current_frame == framenumber) {
         delete call;
         break;
@@ -239,6 +246,7 @@ FrameState::FrameState(const std::string &filename,
   while ((call = p->scan_call())) {
     if (RetraceRender::isRender(*call)) {
       ++render_count;
+      printf("%s:%i render_count = %d\n", __PRETTY_FUNCTION__, __LINE__, render_count);
     }
 
     if (RetraceRender::endsFrame(*call)) {
@@ -277,7 +285,9 @@ FrameRetrace::retraceMetrics(const std::vector<MetricId> &ids,
                           SelectionId(0));
       continue;
     }
+    printf("%s:%i id %d:%d\n", __func__, __LINE__, id.group(), id.counter());
     m_metrics->selectMetric(id);
+    printf("%s:%i\n", __func__, __LINE__);
     for (auto i : m_contexts)
       i->retraceMetrics(m_metrics, m_tracker);
     m_metrics->publish(experimentCount,
